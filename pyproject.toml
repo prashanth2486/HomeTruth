@@ -1,0 +1,9 @@
+[project]
+name = "hometruth"
+version = "0.1.0"
+description = "Buyer-side property analysis for Bengaluru listings."
+requires-python = ">=3.12"
+
+[tool.pytest.ini_options]
+pythonpath = [".", "src"]
+testpaths = ["tests"]

@@ -1,0 +1,83 @@
+"""Shared analysis fixture for chat, PDF, and log tests."""
+
+from schemas import (
+    Affordability,
+    AnalysisResult,
+    CostBreakdown,
+    HorizonResult,
+    LocationResult,
+    PriceEstimate,
+)
+
+
+def sample_analysis() -> AnalysisResult:
+    return AnalysisResult(
+        locality_entered="Whitefield",
+        total_sqft=1200,
+        bhk=2,
+        bath=2,
+        area_type="Super built-up Area",
+        ready_to_move=True,
+        price=PriceEstimate(
+            p10_inr=6_000_000,
+            p40_inr=7_200_000,
+            p50_inr=8_000_000,
+            p60_inr=8_800_000,
+            p90_inr=10_000_000,
+            asking_inr=8_000_000,
+            verdict="fair",
+            offer_low_inr=7_200_000,
+            offer_high_inr=8_800_000,
+            locality_used="Whitefield",
+            locality_unseen=False,
+            explanation="The estimate is driven mainly by floor area, bedrooms, and the locality.",
+            factors=[],
+        ),
+        costs=CostBreakdown(
+            price_inr=8_000_000,
+            stamp_duty_rate=0.05,
+            stamp_duty_base_inr=400_000,
+            cess_inr=40_000,
+            surcharge_inr=8_000,
+            stamp_duty_inr=448_000,
+            registration_inr=160_000,
+            gst_inr=0,
+            gst_rate=0,
+            gst_note="GST is not added because the property is treated as ready to move.",
+            carpet_sqm=70,
+            carpet_assumed=True,
+            first_sale=False,
+            loan_inr=6_400_000,
+            total_interest_inr=5_000_000,
+            all_in_cost_inr=13_608_000,
+            due_at_purchase_inr=2_208_000,
+            guidance_value_note="Duty uses the price you entered.",
+            rate_notes=["Registration is 2%."],
+        ),
+        affordability=Affordability(
+            max_emi_inr=60_000,
+            max_loan_inr=7_000_000,
+            emi_inr=53_532,
+            fits=True,
+            max_affordable_price_inr=8_750_000,
+            cash_to_close_inr=2_208_000,
+            down_payment_inr=1_600_000,
+            reason="The loan EMI is within the share of income you set.",
+        ),
+        buy_vs_rent=[
+            HorizonResult(
+                years=5,
+                buy_cash_outflow_inr=4_000_000,
+                buy_opportunity_cost_inr=200_000,
+                rent_cash_outflow_inr=1_200_000,
+                buyer_net_worth_inr=9_000_000,
+                renter_net_worth_inr=3_000_000,
+                cheaper="buy",
+            )
+        ],
+        rent_monthly_inr=20_000,
+        rent_note="Indicative gross yield of 3.0%.",
+        assumptions_note="Indicative comparison only.",
+        location=LocationResult(available=False, note="Location data is unavailable in this fixture."),
+        disclaimer="Estimate only.",
+    )

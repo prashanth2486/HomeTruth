@@ -1,0 +1,23 @@
+{
+  "default_gross_yield": 0.03,
+  "note": "Indicative assumptions for the buy-versus-rent calculator. They are not observed rents and they are not a forecast.",
+  "by_locality": {
+    "Whitefield": 0.028,
+    "Electronic City": 0.032,
+    "Electronics City Phase 1": 0.032,
+    "Sarjapur Road": 0.03,
+    "HSR Layout": 0.027,
+    "Hebbal": 0.029,
+    "Yelahanka": 0.031,
+    "Marathahalli": 0.03,
+    "Bannerghatta Road": 0.03,
+    "Rajaji Nagar": 0.026,
+    "Koramangala": 0.025,
+    "JP Nagar": 0.028,
+    "7th Phase JP Nagar": 0.028,
+    "Thanisandra": 0.031,
+    "Kanakpura Road": 0.032,
+    "Bellandur": 0.03,
+    "Sarjapur": 0.031
+  }
+}

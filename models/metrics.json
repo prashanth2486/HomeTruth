@@ -1,0 +1,33 @@
+{
+  "rows_in": 13320,
+  "rows_out": 9862,
+  "dropped_missing": 73,
+  "localities_after_cleaning": 1195,
+  "localities_kept": 189,
+  "target": "log(price in lakhs of rupees)",
+  "model": "LightGBM quantile regression at the 10th, 40th, 50th, 60th, and 90th percentiles",
+  "baseline": "Ridge regression on the same features",
+  "grouped_cv": {
+    "lightgbm_p50": {
+      "mape_pct": 25.85,
+      "median_ae_lakhs": 12.967
+    },
+    "ridge_baseline": {
+      "mape_pct": 53.62,
+      "median_ae_lakhs": 17.456
+    },
+    "interval_10_90_coverage": 0.8077
+  },
+  "random_kfold": {
+    "lightgbm_p50": {
+      "mape_pct": 19.22,
+      "median_ae_lakhs": 9.03
+    },
+    "ridge_baseline": {
+      "mape_pct": 155.39,
+      "median_ae_lakhs": 12.428
+    },
+    "interval_10_90_coverage": 0.741
+  },
+  "notes": "Grouped CV holds out whole localities and maps them to other, so it measures unseen areas. Random K-fold lets a known locality appear in both train and test. Interval coverage is the share of held-out asking prices inside the 10th-90th prediction. The design target is about 80%. There is no listing date, so there is no time split. The model learns asking prices, not registered sale prices."
+}
