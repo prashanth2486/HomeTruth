@@ -1,4 +1,6 @@
 .venv/
+web/node_modules/
+web/dist/
 __pycache__/
 .pytest_cache/
 .mypy_cache/
@@ -7,6 +9,9 @@ __pycache__/
 data/raw/
 data/cache/
 data/logs/
+data/catalog.json
+data/app.db
+data/*.db
 models/*.joblib
 models/*.pkl
 *.pyc

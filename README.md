@@ -8,6 +8,7 @@ This is an estimate. It is not an official valuation, a loan offer, or legal adv
 
 ## What you can do
 
+- Search Bengaluru neighbourhoods on a map and open historical asks that the model has already scored.
 - See a price range from the 10th to the 90th percentile, plus a mid estimate.
 - Get a verdict: great deal, fair, or overpriced, and a suggested offer (40th to 60th percentile).
 - Read the top three reasons in one sentence.
@@ -15,15 +16,18 @@ This is an estimate. It is not an official valuation, a loan offer, or legal adv
 - Compare buying with renting over 5, 10, and 15 years. Every assumption is on the screen and can be changed.
 - Check whether the EMI fits 40–50% of net income after existing EMIs.
 - Put two or three listings side by side.
+- Create a free account to sync a shortlist and loan numbers across visits.
 - Score metro stations, schools, hospitals, and IT parks within 2 km, and estimate a drive to the office.
 - Ask questions about that one result. The assistant cannot see your income.
 - Download a PDF summary.
 
-Income and office location are used in the session and are not written to the prediction log.
+Browse without signing in. Income is never written to the prediction log. Signed-in users can sync loan numbers to their account; guests keep them in the browser tab only.
 
 ## Architecture
 
 ```
+Catalog search / map (public)
+Account (register / login / JWT) -> synced shortlist + optional buyer prefs
 Listing + income + optional office
         |
         +-- LightGBM quantile models -> SHAP sentence, verdict, offer
@@ -33,8 +37,8 @@ Listing + income + optional office
         v
    One analysis JSON
         |
-        +-- FastAPI
-        +-- Streamlit
+        +-- FastAPI (also serves the React site)
+        +-- Streamlit (old demo)
         +-- Claude, only when an API key is set, reading that JSON
 ```
 
@@ -63,31 +67,51 @@ source .venv/bin/activate
 pip install -r requirements.txt
 python scripts/download_data.py
 python scripts/retrain.py
-streamlit run app/streamlit_app.py
+python scripts/build_catalog.py
+cd web && npm install && npm run build && cd ..
+uvicorn api.main:app --host 127.0.0.1 --port 8000
 ```
 
-The API, from the repo root:
+Open http://127.0.0.1:8000. That process serves the website and the API.
 
-```bash
-uvicorn api.main:app --reload
-```
-
+- `GET /localities?q=` search neighbourhoods
+- `GET /localities/{name}` summary and listings
+- `GET /localities/{name}/location` metro, schools, hospitals, and IT parks
+- `GET /listings` filter by locality, BHK, verdict, and max price
+- `GET /listings/{id}` one historical ask
+- `GET /map` localities that have coordinates
 - `GET /health`
+- `POST /auth/register`, `POST /auth/login`, `GET /auth/me`
+- `PUT /auth/me/shortlist`, `PUT /auth/me/buyer`
 - `POST /analyze`
 - `POST /compare` with 2 or 3 listings
 - `POST /chat`
 - `POST /report` returns the PDF
 
+Accounts use bcrypt password hashes and JWT bearer tokens (7-day sessions). User rows live in `data/app.db` by default (SQLite). Set `HOMETRUTH_JWT_SECRET` in production.
+
+The old Streamlit screen is still there if you want it: `streamlit run app/streamlit_app.py`.
+
 The PDF is a POST so the analysis does not have to be stored and income is not placed in a URL.
 
-Copy `.env.example` to `.env` and set `ANTHROPIC_API_KEY` if you want the assistant to answer ordinary questions. Flood and “should I take this loan?” questions are refused even without a key. `ANTHROPIC_MODEL` defaults to `claude-sonnet-4-5`.
+Copy `.env.example` to `.env`. Set `HOMETRUTH_JWT_SECRET` for real deploys, and `ANTHROPIC_API_KEY` if you want the assistant to answer ordinary questions. Flood and “should I take this loan?” questions are refused even without a key. `ANTHROPIC_MODEL` defaults to `claude-sonnet-4-5`.
+
+### Frontend only (optional)
+
+For local UI work against an already running API:
+
+```bash
+cd web && npm install && npm run dev
+```
+
+Vite proxies API calls to `http://127.0.0.1:8000`. You can also build `web/dist` and let FastAPI serve it, or host the built assets on Netlify/Vercel/Cloudflare Pages and point the API origin at your Render/HF backend.
 
 ```bash
 pytest
 python scripts/drift_report.py
 ```
 
-`models/hometruth.joblib` and `data/raw/` are gitignored. `scripts/retrain.py` rebuilds them. `models/metrics.json` is the scorecard above.
+`models/hometruth.joblib`, `data/raw/`, and `data/catalog.json` are gitignored. `scripts/retrain.py` rebuilds the model. `scripts/build_catalog.py` scores every cleaned listing and writes the catalog the website searches. `models/metrics.json` is the scorecard above.
 
 ## Rates used in the calculator
 
@@ -108,9 +132,9 @@ The locality score weights metro 35, IT parks 25, schools 20, and hospitals 20. 
 
 There is no live URL yet. This repo cannot create a hosting account.
 
-Hugging Face Spaces: use the `Dockerfile`. The image downloads the listings and trains the model during the build, then serves Streamlit on port 8501.
+Hugging Face Spaces or Render: use the `Dockerfile`. The image builds the website, downloads the listings, trains the model, writes the catalog, and serves everything with uvicorn on port 8000.
 
-Render, for the API: build with `pip install -r requirements.txt && python scripts/download_data.py && python scripts/retrain.py`, and start with `uvicorn api.main:app --host 0.0.0.0 --port $PORT`.
+A host that only runs the API can start with `uvicorn api.main:app --host 0.0.0.0 --port $PORT` after `pip install -r requirements.txt && python scripts/download_data.py && python scripts/retrain.py && python scripts/build_catalog.py`.
 
 Set `ANTHROPIC_API_KEY` in the host's secret store, not in the image.
 
